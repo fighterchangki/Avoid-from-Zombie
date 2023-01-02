@@ -12,4 +12,5 @@ AAvoid_From_ZombieGameMode::AAvoid_From_ZombieGameMode()
 	{
 		DefaultPawnClass = PlayerPawnBPClass.Class;
 	}
+	UE_LOG(LOGTemp, Warning, TEXT("%s"), *CALLINFO);
 }
