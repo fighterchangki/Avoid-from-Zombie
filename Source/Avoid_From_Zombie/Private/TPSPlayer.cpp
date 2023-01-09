@@ -27,6 +27,7 @@ ATPSPlayer::ATPSPlayer()
 	tpsCamComp->SetupAttachment(springArmComp);
 	tpsCamComp->bUsePawnControlRotation = false;
 	bUseControllerRotationYaw = true;
+	JumpMaxCount = 2;
 	GetCharacterMovement()->JumpZVelocity = 500.0f;
 }
 // Called when the game starts or when spawned
@@ -40,6 +41,11 @@ void ATPSPlayer::BeginPlay()
 void ATPSPlayer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	Move();
+	
+}
+void ATPSPlayer::Move()
+{
 	//상대 좌표방향으로 direction을 바꿔준다
 	direction = FTransform(GetControlRotation()).TransformVector(direction);
 	//등속 운동
@@ -50,7 +56,6 @@ void ATPSPlayer::Tick(float DeltaTime)
 	AddMovementInput(direction);
 	direction = FVector::ZeroVector;
 }
-
 // Called to bind functionality to input
 void ATPSPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -61,6 +66,7 @@ void ATPSPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 	PlayerInputComponent->BindAxis(TEXT("Vertical"), this, &ATPSPlayer::InputVertical);
 	PlayerInputComponent->BindAction(TEXT("Jump"), IE_Pressed,this, &ATPSPlayer::InputJump);
 }
+
 void ATPSPlayer::Turn(float value)
 {
 	AddControllerYawInput(value);

@@ -17,4 +17,5 @@ AAvoid_From_ZombieGameMode::AAvoid_From_ZombieGameMode()
 	PRINT_CALLINFO();
 	UE_LOG(LogTemp, Warning, TEXT("%s"), *CALLINFO);
 	PRINT_LOG(TEXT("My Log : %s"), TEXT("TPS project!!"));
+	
 }
