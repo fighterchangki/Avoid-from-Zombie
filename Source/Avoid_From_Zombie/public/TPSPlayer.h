@@ -46,4 +46,6 @@ public:
 	void InputJump();
 
 	void Move();
+	UPROPERTY(VisibleAnywhere, Category = GunMesh)
+		class USkeletalMeshComponent* gunMeshComp;
 };
