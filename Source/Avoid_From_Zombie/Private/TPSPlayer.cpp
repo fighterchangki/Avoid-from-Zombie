@@ -5,6 +5,7 @@
 #include <GameFramework/SpringArmComponent.h>
 #include <Camera/CameraComponent.h>
 #include <GameFramework/CharacterMovementComponent.h>
+#include "Bullet.h"
 // Sets default values
 ATPSPlayer::ATPSPlayer() 
 {
@@ -38,12 +39,27 @@ ATPSPlayer::ATPSPlayer()
 		gunMeshComp->SetSkeletalMesh(TempGunMesh.Object);
 		gunMeshComp->SetRelativeLocation(FVector(-14, 52, 120));
 	}
+	//5. 스나이퍼건 컴포넌트 등록
+	sniperGunComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SniperGunComp"));
+	//5-2,부모 컴포넌트를 Mesh 컴포넌트를 설정
+	sniperGunComp->SetupAttachment(GetMesh());
+	ConstructorHelpers::FObjectFinder<UStaticMesh>TempSniperMesh(TEXT("StaticMesh'/Game/SniperGun/sniper1.sniper1'"));
+	//5-3.데이터로드가 성공했다면
+	if (TempSniperMesh.Succeeded())
+	{
+		//5-4. 스태틱 메시 할당
+		sniperGunComp->SetStaticMesh(TempSniperMesh.Object);
+		//5-5. 위치 조정하기
+		sniperGunComp->SetRelativeLocation(FVector(-22,55,120));
+		//5-6. 크기 조정하기
+		sniperGunComp->SetRelativeScale3D(FVector(0.15f));
+	}
 }
 // Called when the game starts or when spawned
 void ATPSPlayer::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	ChangeToGrenadeGun();
 }
 
 // Called every frame
@@ -74,6 +90,9 @@ void ATPSPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 	PlayerInputComponent->BindAxis(TEXT("Horizontal"), this, &ATPSPlayer::InputHorizontal);
 	PlayerInputComponent->BindAxis(TEXT("Vertical"), this, &ATPSPlayer::InputVertical);
 	PlayerInputComponent->BindAction(TEXT("Jump"), IE_Pressed,this, &ATPSPlayer::InputJump);
+	PlayerInputComponent->BindAction(TEXT("Fire"), IE_Pressed, this, &ATPSPlayer::InputFire);
+	PlayerInputComponent->BindAction(TEXT("GrenadeGun"), IE_Pressed, this, &ATPSPlayer::ChangeToGrenadeGun);
+	PlayerInputComponent->BindAction(TEXT("SniperGun"), IE_Pressed, this, &ATPSPlayer::ChangeToSniperGun);
 }
 
 void ATPSPlayer::Turn(float value)
@@ -95,5 +114,24 @@ void ATPSPlayer::InputVertical(float value)
 void ATPSPlayer::InputJump()
 {
 	Jump();
+}
+void ATPSPlayer::InputFire()
+{
+	FTransform firePosition = gunMeshComp->GetSocketTransform(TEXT("FirePosition"));
+	GetWorld()->SpawnActor<ABullet>(bulletFactory, firePosition);
+}
+void ATPSPlayer::ChangeToGrenadeGun()
+{
+	//유탄총 사용 중으로 체크
+	bUsinGrenadeGun = true;
+	sniperGunComp->SetVisibility(false);
+	gunMeshComp->SetVisibility(true);
+}
+void ATPSPlayer::ChangeToSniperGun()
+{
+	//유탄총 사용 중으로 체크
+	bUsinGrenadeGun = true;
+	sniperGunComp->SetVisibility(true);
+	gunMeshComp->SetVisibility(false);
 }
 

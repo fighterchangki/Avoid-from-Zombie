@@ -48,4 +48,16 @@ public:
 	void Move();
 	UPROPERTY(VisibleAnywhere, Category = GunMesh)
 		class USkeletalMeshComponent* gunMeshComp;
+	UPROPERTY(EditDefaultsOnly, Category = BulletFactory)
+		TSubclassOf<class ABullet>bulletFactory;
+	void InputFire();
+
+	UPROPERTY(VisibleAnywhere, Category = GunMesh)
+		class UStaticMeshComponent* sniperGunComp;
+	//유탄총 사용 중인지 여부
+	bool bUsinGrenadeGun = true;
+	//유탄총으로 변경
+	void ChangeToGrenadeGun();
+	//스나이퍼건으로 변경
+	void ChangeToSniperGun();
 };

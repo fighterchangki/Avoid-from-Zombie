@@ -31,4 +31,10 @@ public:
 	//외관 컴포넌트
 	UPROPERTY(VisibleAnywhere, Category = Movement)
 		class UStaticMeshComponent* bodyMeshComp;
+	//총알 제거 함수
+	void Die();
+	//총알 속도
+	UPROPERTY(EditAnywhere, Category = Settings)
+		float speed = 5000;
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)override;
 };
