@@ -6,6 +6,7 @@
 #include <Camera/CameraComponent.h>
 #include <GameFramework/CharacterMovementComponent.h>
 #include "Bullet.h"
+#include<Blueprint/UserWidget.h>
 // Sets default values
 ATPSPlayer::ATPSPlayer() 
 {
@@ -59,6 +60,8 @@ ATPSPlayer::ATPSPlayer()
 void ATPSPlayer::BeginPlay()
 {
 	Super::BeginPlay();
+	//1.스나이퍼 UI 위젯 인스턴스 생성
+	_sniperUI = CreateWidget(GetWorld(), sniperUIFactory);
 	ChangeToGrenadeGun();
 }
 
@@ -93,8 +96,26 @@ void ATPSPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 	PlayerInputComponent->BindAction(TEXT("Fire"), IE_Pressed, this, &ATPSPlayer::InputFire);
 	PlayerInputComponent->BindAction(TEXT("GrenadeGun"), IE_Pressed, this, &ATPSPlayer::ChangeToGrenadeGun);
 	PlayerInputComponent->BindAction(TEXT("SniperGun"), IE_Pressed, this, &ATPSPlayer::ChangeToSniperGun);
+	PlayerInputComponent->BindAction(TEXT("Sniper"), IE_Pressed, this, &ATPSPlayer::SniperAim);
 }
-
+void ATPSPlayer::SniperAim()
+{
+	//스나이퍼건 모드가 아니라면 처리하지 않는다
+	if (bUsinGrenadeGun)
+	{
+		return;
+	}
+	//Pressed 입력 처리
+	if (bSniperAim == false)
+	{
+		//1.스나이퍼 조준 모드 활성화
+		bSniperAim = true;
+		//2.스나이퍼조준 UI 등록
+		_sniperUI->AddToViewport();
+		//3. 카메라의 시야각 Field Of View 설정
+		tpsCamComp->SetFieldOfView(45.0f);
+	}
+}
 void ATPSPlayer::Turn(float value)
 {
 	AddControllerYawInput(value);
