@@ -8,6 +8,8 @@
 #include "Bullet.h"
 #include<Blueprint/UserWidget.h>
 #include<Kismet/GameplayStatics.h>
+#include<GameFramework/CharacterMovementComponent.h>
+#include"PlayerAnim.h"
 // Sets default values
 ATPSPlayer::ATPSPlayer() 
 {
@@ -17,7 +19,7 @@ ATPSPlayer::ATPSPlayer()
 	//TEXT("!!!!!!!!!!!!!!!!!!!Hello World");
 	if (TempMesh.Succeeded())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Hello!!!!!!!!!!!"));
+		
 		GetMesh()->SetSkeletalMesh(TempMesh.Object);
 		GetMesh()->SetRelativeLocationAndRotation(FVector(0, 0, -90), FRotator(0, -90, 0));
 	}
@@ -29,38 +31,49 @@ ATPSPlayer::ATPSPlayer()
 	tpsCamComp = CreateDefaultSubobject<UCameraComponent>(TEXT("TpsCamComp"));
 	tpsCamComp->SetupAttachment(springArmComp);
 	tpsCamComp->bUsePawnControlRotation = false;
+	
 	bUseControllerRotationYaw = true;
 	JumpMaxCount = 2;
 	GetCharacterMovement()->JumpZVelocity = 500.0f;
 
 	gunMeshComp = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("GunMeshComp"));
-	gunMeshComp->SetupAttachment(GetMesh());
+	gunMeshComp->SetupAttachment(GetMesh(),TEXT("hand_rSocket"));
+	UE_LOG(LogTemp, Warning, TEXT("GunMesh_Hello123!!!!!!!!!!!"));
 	ConstructorHelpers::FObjectFinder<USkeletalMesh>TempGunMesh(TEXT("SkeletalMesh'/Game/Weapon/Mesh/SK_FPGun.SK_FPGun'"));
 	if (TempGunMesh.Succeeded())
 	{
 		gunMeshComp->SetSkeletalMesh(TempGunMesh.Object);
-		gunMeshComp->SetRelativeLocation(FVector(-14, 52, 120));
+		
+		gunMeshComp->SetRelativeLocation(FVector(-17, 10, -3));
+		gunMeshComp->SetRelativeRotation(FRotator(0, 90, 0));
+		
 	}
 	//5. 스나이퍼건 컴포넌트 등록
 	sniperGunComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SniperGunComp"));
 	//5-2,부모 컴포넌트를 Mesh 컴포넌트를 설정
-	sniperGunComp->SetupAttachment(GetMesh());
+	sniperGunComp->SetupAttachment(GetMesh(), TEXT("hand_rSocket"));
+	UE_LOG(LogTemp, Warning, TEXT("TempSniperMesh_Hello123!!!!!!!!!!!"));
 	ConstructorHelpers::FObjectFinder<UStaticMesh>TempSniperMesh(TEXT("StaticMesh'/Game/SniperGun/sniper1.sniper1'"));
 	//5-3.데이터로드가 성공했다면
 	if (TempSniperMesh.Succeeded())
 	{
 		//5-4. 스태틱 메시 할당
 		sniperGunComp->SetStaticMesh(TempSniperMesh.Object);
+		
 		//5-5. 위치 조정하기
-		sniperGunComp->SetRelativeLocation(FVector(-22,55,120));
+		sniperGunComp->SetRelativeLocation(FVector(-42,7,1));
+		sniperGunComp->SetRelativeRotation(FRotator(0, 90, 0));
 		//5-6. 크기 조정하기
 		sniperGunComp->SetRelativeScale3D(FVector(0.15f));
+		
 	}
 }
 // Called when the game starts or when spawned
 void ATPSPlayer::BeginPlay()
 {
 	Super::BeginPlay();
+	//초기 속도를 걷기로 설정
+	GetCharacterMovement()->MaxWalkSpeed = walkSpeed;
 	//1.스나이퍼 UI 위젯 인스턴스 생성
 	_sniperUI = CreateWidget(GetWorld(), sniperUIFactory);
 	//2.일반 조준 UI크로스헤어 인스턴스 생성
@@ -104,6 +117,8 @@ void ATPSPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 	PlayerInputComponent->BindAction(TEXT("SniperGun"), IE_Pressed, this, &ATPSPlayer::ChangeToSniperGun);
 	PlayerInputComponent->BindAction(TEXT("Sniper"), IE_Pressed, this, &ATPSPlayer::SniperAim);
 	PlayerInputComponent->BindAction(TEXT("Sniper"), IE_Released, this, &ATPSPlayer::SniperAim);
+	PlayerInputComponent->BindAction(TEXT("Run"), IE_Pressed, this, &ATPSPlayer::InputRun);
+	PlayerInputComponent->BindAction(TEXT("Run"), IE_Released, this, &ATPSPlayer::InputRun);
 }
 void ATPSPlayer::SniperAim()
 {
@@ -200,6 +215,9 @@ void ATPSPlayer::InputFire()
 				hitComp->AddForce(force);
 			}
 		}
+		//공격 애니메이션 재생
+		auto anim = Cast<UPlayerAnim>(GetMesh()->GetAnimInstance());
+		anim->PlayAttackAnim();
 	}
 }
 void ATPSPlayer::ChangeToGrenadeGun()
@@ -215,5 +233,19 @@ void ATPSPlayer::ChangeToSniperGun()
 	bUsinGrenadeGun = false;
 	sniperGunComp->SetVisibility(true);
 	gunMeshComp->SetVisibility(false);
+}
+void ATPSPlayer::InputRun()
+{
+	auto movement = GetCharacterMovement();
+	//현재 달리기 모드라면
+	if (movement->MaxWalkSpeed > walkSpeed)
+	{
+		//걷기 속도로 전환
+		movement->MaxWalkSpeed = walkSpeed;
+	}
+	else
+	{
+		movement->MaxWalkSpeed = runSpeed;
+	}
 }
 

@@ -34,8 +34,6 @@ public:
 	void Turn(float value);
 	void LookUp(float value);
 
-	UPROPERTY(EditAnywhere, Category = PlayerSetting)
-		float walkSpeed = 600;
 	//이동방향
 	FVector direction;
 	//좌우 입력 이벤트 처리 함수
@@ -77,4 +75,12 @@ public:
 		TSubclassOf<class UUserWidget>crosshairUIFactory;
 	//크로스헤어 인스턴스
 	class UUserWidget* _crosshairUI;
+	//걷기 속도
+	UPROPERTY(EditAnywhere, Category = PlayerSetting)
+	float walkSpeed = 200;
+	//달리기 속도
+	UPROPERTY(EditAnywhere, Category = PlayerSetting)
+	float runSpeed = 600;
+	//달리기 이벤트 처리 함수
+	void InputRun();
 };
