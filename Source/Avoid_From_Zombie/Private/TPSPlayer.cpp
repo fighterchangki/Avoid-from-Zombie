@@ -19,7 +19,6 @@ ATPSPlayer::ATPSPlayer()
 	//TEXT("!!!!!!!!!!!!!!!!!!!Hello World");
 	if (TempMesh.Succeeded())
 	{
-		
 		GetMesh()->SetSkeletalMesh(TempMesh.Object);
 		GetMesh()->SetRelativeLocationAndRotation(FVector(0, 0, -90), FRotator(0, -90, 0));
 	}
@@ -37,22 +36,22 @@ ATPSPlayer::ATPSPlayer()
 	GetCharacterMovement()->JumpZVelocity = 500.0f;
 
 	gunMeshComp = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("GunMeshComp"));
-	gunMeshComp->SetupAttachment(GetMesh(),TEXT("hand_rSocket"));
-	UE_LOG(LogTemp, Warning, TEXT("GunMesh_Hello123!!!!!!!!!!!"));
+	gunMeshComp->SetupAttachment(GetMesh(),"hand_rSocket");
+	
 	ConstructorHelpers::FObjectFinder<USkeletalMesh>TempGunMesh(TEXT("SkeletalMesh'/Game/Weapon/Mesh/SK_FPGun.SK_FPGun'"));
 	if (TempGunMesh.Succeeded())
 	{
 		gunMeshComp->SetSkeletalMesh(TempGunMesh.Object);
 		
-		gunMeshComp->SetRelativeLocation(FVector(-17, 10, -3));
-		gunMeshComp->SetRelativeRotation(FRotator(0, 90, 0));
+		gunMeshComp->SetRelativeLocationAndRotation(FVector(-17, 10, -3), FRotator(0, 90, 0));
+
 		
 	}
 	//5. 스나이퍼건 컴포넌트 등록
 	sniperGunComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SniperGunComp"));
 	//5-2,부모 컴포넌트를 Mesh 컴포넌트를 설정
-	sniperGunComp->SetupAttachment(GetMesh(), TEXT("hand_rSocket"));
-	UE_LOG(LogTemp, Warning, TEXT("TempSniperMesh_Hello123!!!!!!!!!!!"));
+	sniperGunComp->SetupAttachment(GetMesh(),"hand_rSocket");
+	
 	ConstructorHelpers::FObjectFinder<UStaticMesh>TempSniperMesh(TEXT("StaticMesh'/Game/SniperGun/sniper1.sniper1'"));
 	//5-3.데이터로드가 성공했다면
 	if (TempSniperMesh.Succeeded())
@@ -61,11 +60,15 @@ ATPSPlayer::ATPSPlayer()
 		sniperGunComp->SetStaticMesh(TempSniperMesh.Object);
 		
 		//5-5. 위치 조정하기
-		sniperGunComp->SetRelativeLocation(FVector(-42,7,1));
-		sniperGunComp->SetRelativeRotation(FRotator(0, 90, 0));
+		sniperGunComp->SetRelativeLocationAndRotation(FVector(-42, 7, 1), FRotator(0, 90, 0));
+
 		//5-6. 크기 조정하기
 		sniperGunComp->SetRelativeScale3D(FVector(0.15f));
-		
+	}
+	ConstructorHelpers::FObjectFinder<USoundBase>tempSound(TEXT("SoundWave'/Game/SniperGun/Rifle.Rifle'"));
+	if (tempSound.Succeeded())
+	{
+		bulletSound = tempSound.Object;
 	}
 }
 // Called when the game starts or when spawned
@@ -89,7 +92,6 @@ void ATPSPlayer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	Move();
-	
 }
 void ATPSPlayer::Move()
 {
@@ -173,6 +175,10 @@ void ATPSPlayer::InputJump()
 }
 void ATPSPlayer::InputFire()
 {
+	UGameplayStatics::PlaySound2D(GetWorld(), bulletSound);
+	//카메라 셰이크 재생
+	auto controller = GetWorld()->GetFirstPlayerController();
+	controller->PlayerCameraManager->StartCameraShake(cameraShake);
 	//유탄총 사용 시
 	if (bUsinGrenadeGun)
 	{

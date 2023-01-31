@@ -83,4 +83,9 @@ public:
 	float runSpeed = 600;
 	//달리기 이벤트 처리 함수
 	void InputRun();
+	//카메라 셰이크 블루프린트를 저장할 변수
+	UPROPERTY(EditDefaultsOnly, Category = CameraShake)
+		TSubclassOf<class UCameraShakeBase> cameraShake;
+	UPROPERTY(EditDefaultsOnly, Category = Sound)
+		class USoundBase* bulletSound;
 };
